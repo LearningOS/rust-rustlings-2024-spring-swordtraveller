@@ -2,11 +2,9 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -29,13 +27,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd + Clone> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd + Clone> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -71,12 +69,43 @@ impl<T> LinkedList<T> {
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut head_a = list_a.start;
+        let mut head_b = list_b.start;
+
+        let mut merged_list = LinkedList::new();
+
+        while head_a.is_some() && head_b.is_some() {
+            unsafe {
+                let value_a = head_a.unwrap().as_ref().val.clone();
+                let value_b = head_b.unwrap().as_ref().val.clone();
+                // 合并有序链表
+                if value_a < value_b {
+                    merged_list.add(value_a);
+                    head_a = head_a.unwrap().as_ref().next;
+
+                } else {
+                    merged_list.add(value_b);
+                    head_b = head_b.unwrap().as_ref().next;
+                }
+            }
         }
+
+        while head_a.is_some() {
+            unsafe {
+                merged_list.add(head_a.unwrap().as_ref().val.clone());
+                head_a = head_a.unwrap().as_ref().next;
+            }
+        }
+
+        while head_b.is_some() {
+            unsafe {
+                merged_list.add(head_b.unwrap().as_ref().val.clone());
+                head_b = head_b.unwrap().as_ref().next;
+            }
+        }
+
+        merged_list
+
 	}
 }
 
