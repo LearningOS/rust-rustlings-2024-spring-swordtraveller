@@ -3,8 +3,6 @@
 // Execute `rustlings hint threads3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
-
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
@@ -31,10 +29,17 @@ fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     let qc1 = Arc::clone(&qc);
     let qc2 = Arc::clone(&qc);
 
+    // 将 Sender 包装在 Arc 中，以便可以安全地在多个线程间共享
+    let tx_arc = Arc::new(tx);
+
+    // Clone Arc 来创建 Sender 的多个引用
+    let tx_arc1 = Arc::clone(&tx_arc);
+    let tx_arc2 = Arc::clone(&tx_arc);
+
     thread::spawn(move || {
         for val in &qc1.first_half {
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx_arc1.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
@@ -42,7 +47,7 @@ fn send_tx(q: Queue, tx: mpsc::Sender<u32>) -> () {
     thread::spawn(move || {
         for val in &qc2.second_half {
             println!("sending {:?}", val);
-            tx.send(*val).unwrap();
+            tx_arc2.send(*val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
