@@ -1,12 +1,12 @@
 /*
-	heap
-	This question requires you to implement a binary heap function
+    heap
+    This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
 
+#[derive(Debug)]
 pub struct Heap<T>
 where
     T: Default,
@@ -23,7 +23,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![],
             comparator,
         }
     }
@@ -37,7 +37,54 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        let mut index = self.len() - 1;
+        let mut parent_index = self.parent_idx(index);
+        while index > 0 && (self.comparator)(&self.items[index], &self.items[parent_index]) {
+            self.items.swap(index, parent_index);
+
+            index = parent_index;
+            parent_index = self.parent_idx(index);
+        }
+    }
+
+    pub fn pop(&mut self) -> Option<T> {
+        if self.is_empty() {
+            return None;
+        }
+
+        let maxIndex = self.len() - 1;
+        self.items.swap(0, maxIndex);
+        let value = self.items.pop();
+        self.count -= 1;
+        let mut pIndex = 0;
+        let mut waitChangedIndex = 0;
+        while pIndex < maxIndex
+            && self.children_present(pIndex)
+            && self.right_child_idx(pIndex) < maxIndex
+        {
+            if self.children_present(self.right_child_idx(pIndex)) {
+                if (self.comparator)(
+                    &self.items[self.left_child_idx(pIndex)],
+                    &self.items[self.right_child_idx(pIndex)],
+                ) {
+                    waitChangedIndex = self.left_child_idx(pIndex);
+                } else {
+                    waitChangedIndex = self.right_child_idx(pIndex);
+                }
+            }
+            if pIndex == waitChangedIndex {
+                break;
+            }
+
+            if !(self.comparator)(&self.items[pIndex], &self.items[waitChangedIndex]) {
+                self.items.swap(pIndex, waitChangedIndex);
+                pIndex = waitChangedIndex;
+            }
+        }
+
+        value
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +105,7 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+        0
     }
 }
 
@@ -84,8 +131,7 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        self.pop()
     }
 }
 
