@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -41,22 +40,43 @@ where
 
 impl<T> BinarySearchTree<T>
 where
-    T: Ord,
+    T: Ord + Debug,
 {
-
     fn new() -> Self {
         BinarySearchTree { root: None }
     }
 
-    // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        self.root = Self::insert_into(&mut self.root, value);
     }
 
-    // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        Self::search_in(&self.root, value)
+    }
+
+    fn insert_into(node: &mut Option<Box<TreeNode<T>>>, value: T) -> Option<Box<TreeNode<T>>> {
+        match node {
+            Some(ref mut n) => {
+                match n.value.cmp(&value) {
+                    Ordering::Less => n.right = Self::insert_into(&mut n.right, value),
+                    Ordering::Greater => n.left = Self::insert_into(&mut n.left, value),
+                    Ordering::Equal => {}
+                }
+                node.take()
+            }
+            None => Some(Box::new(TreeNode::new(value))),
+        }
+    }
+
+    fn search_in(node: &Option<Box<TreeNode<T>>>, value: T) -> bool {
+        match node {
+            Some(ref n) => match n.value.cmp(&value) {
+                Ordering::Equal => true,
+                Ordering::Less => Self::search_in(&n.right, value),
+                Ordering::Greater => Self::search_in(&n.left, value),
+            },
+            None => false,
+        }
     }
 }
 
@@ -64,9 +84,19 @@ impl<T> TreeNode<T>
 where
     T: Ord,
 {
-    // Insert a node into the tree
+    
     fn insert(&mut self, value: T) {
-        //TODO
+        if value < self.value {
+            match self.left {
+                Some(ref mut left) => left.insert(value),
+                None => self.left = Some(Box::new(TreeNode::new(value))),
+            }
+        } else if value > self.value {
+            match self.right {
+                Some(ref mut right) => right.insert(value),
+                None => self.right = Some(Box::new(TreeNode::new(value))),
+            }
+        }
     }
 }
 
